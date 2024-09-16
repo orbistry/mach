@@ -9,10 +9,12 @@ const graph = i.graph(
       text: i.string(),
       done: i.boolean(),
       createdAt: i.number(),
+      assignee: i.string(),
     }),
     drawings: i.entity({
       name: i.string(),
       state: i.json(),
+      createdAt: i.number(),
     }),
     invites: i.entity({
       teamId: i.string(),
@@ -42,7 +44,7 @@ const graph = i.graph(
         on: 'teams',
         has: 'many',
         label: 'todos',
-      }
+      },
     },
     // team has many drawings
     drawingsTeams: {
@@ -60,27 +62,27 @@ const graph = i.graph(
     // team has many invites
     invitesTeams: {
       forward: {
-        on: "invites",
-        has: "one",
-        label: "teams",
+        on: 'invites',
+        has: 'one',
+        label: 'teams',
       },
       reverse: {
-        on: "teams",
-        has: "many",
-        label: "invites",
+        on: 'teams',
+        has: 'many',
+        label: 'invites',
       },
     },
     // team has many memberships
     membershipsTeams: {
       forward: {
-        on: "memberships",
-        has: "one",
-        label: "teams",
+        on: 'memberships',
+        has: 'one',
+        label: 'teams',
       },
       reverse: {
-        on: "teams",
-        has: "many",
-        label: "memberships",
+        on: 'teams',
+        has: 'many',
+        label: 'memberships',
       },
     },
   },
