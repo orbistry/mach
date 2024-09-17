@@ -9,13 +9,12 @@ const graph = i.graph(
       text: i.string(),
       done: i.boolean(),
       createdAt: i.number(),
-      assignee: i.string(),
+      assigneeId: i.string().optional(),
     }),
     drawings: i.entity({
       name: i.string(),
       state: i.json(),
       createdAt: i.number(),
-      todo: i.string(),
     }),
     invites: i.entity({
       teamId: i.string(),
@@ -43,6 +42,18 @@ const graph = i.graph(
       },
       reverse: {
         on: 'teams',
+        has: 'many',
+        label: 'todos',
+      },
+    },
+    todosAssignees: {
+      forward: {
+        on: 'todos',
+        has: 'one',
+        label: 'memberships',
+      },
+      reverse: {
+        on: 'memberships',
         has: 'many',
         label: 'todos',
       },
