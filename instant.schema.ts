@@ -15,6 +15,7 @@ const graph = i.graph(
       name: i.string(),
       state: i.json(),
       createdAt: i.number(),
+      todo: i.string(),
     }),
     invites: i.entity({
       teamId: i.string(),
