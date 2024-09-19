@@ -42,7 +42,7 @@ export default {
       'isInvitee',
       'auth.email == data.userEmail',
       'isDefault',
-      "data.ref('teams.isDefault')",
+      "true in data.ref('teams.isDefault')",
     ],
     allow: {
       view: 'isInvitee || isMember',
@@ -56,7 +56,7 @@ export default {
       'isMember',
       "auth.id in data.ref('teams.memberships.userId')",
       'isDefault',
-      "data.ref('teams.isDefault')",
+      "true in data.ref('teams.isDefault')",
       'isInvitee',
       "auth.email in data.ref('teams.invites.userEmail')",
       'isCreator',
