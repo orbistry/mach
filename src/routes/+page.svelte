@@ -8,7 +8,7 @@
   let todos: { id: string }[] = $state([]);
 
   onMount(() => {
-    db.subscribeAuth((auth) => {
+    const unsub = db.subscribeAuth((auth) => {
       const user = auth.user!;
 
       if (
@@ -39,6 +39,7 @@
         ]);
       }
     });
+    return unsub;
   });
 
   db.subscribeQuery({ todos: {} }, (resp) => {
