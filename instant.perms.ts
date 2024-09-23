@@ -60,7 +60,7 @@ export default {
       'isInvitee',
       "auth.email in data.ref('teams.invites.userEmail')",
       'isCreator',
-      "auth.id == data.ref('teams.creatorId') && size(data.ref('teams.memberships.userId')) == 1",
+      "auth.id in data.ref('teams.creatorId') && size(data.ref('teams.memberships.userId')) == 1",
       'isUser',
       'auth.id == data.userId',
     ],
