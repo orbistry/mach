@@ -6,8 +6,6 @@ export const db = init_experimental({ appId: APP_ID, schema });
 
 export type Thing = typeof schema.entities;
 
-export const getId = () => id();
-
 export module Todo {
   export function create(text: string) {
     return db.transact(
