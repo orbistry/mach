@@ -124,8 +124,9 @@
       <button
         type="submit"
         class="bg-purple-700 text-cyan-100 p-2 rounded-lg shadow-md hover:bg-purple-600 transition-transform transform-gpu hover:translate-y-[-2px]"
-        >Create</button
       >
+        Create
+      </button>
     </form>
   </div>
 {:else}
@@ -143,8 +144,9 @@
       <button
         type="submit"
         class="bg-purple-700 text-cyan-100 p-2 rounded-lg shadow-md hover:bg-purple-600 transition-transform transform-gpu hover:translate-y-[-2px]"
-        >Create</button
       >
+        Create
+      </button>
     </form>
 
     {#each teams as team}
@@ -156,8 +158,10 @@
             teamState.setTeamName(team.name);
 
             goto(`/todos`);
-          }}>{team.id},{team.name},{team.isDefault}</button
+          }}
         >
+          {team.id},{team.name},{team.isDefault}
+        </button>
       </div>
     {/each}
   </div>

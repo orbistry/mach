@@ -70,8 +70,10 @@
     type="button"
     onclick={() => {
       goto('/');
-    }}>Back</button
+    }}
   >
+    Back
+  </button>
 
   <form onsubmit={createTodo} class="flex flex-col gap-8">
     <input
@@ -91,8 +93,9 @@
     <button
       type="submit"
       class="bg-purple-700 text-cyan-100 p-2 rounded-lg shadow-md hover:bg-purple-600 transition-transform transform-gpu hover:translate-y-[-2px]"
-      >Create</button
     >
+      Create
+    </button>
   </form>
 
   {#each todos as todo}
