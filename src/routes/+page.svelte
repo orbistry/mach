@@ -1,11 +1,6 @@
 <script lang="ts">
   import { db } from '$lib/instant';
-  import {
-    type InstantQueryResult,
-    type LifecycleSubscriptionState,
-    type User,
-    id,
-  } from '@instantdb/core';
+  import { type InstantQueryResult, id } from '@instantdb/core';
   import { onMount } from 'svelte';
 
   import { teamState } from '$lib/team.svelte';
@@ -47,7 +42,6 @@
   async function makeDefaultTeam(e: Event) {
     e.preventDefault();
 
-    console.log('HEREERE');
     console.log(user.authState);
 
     if (user.authState) {
@@ -71,9 +65,11 @@
 
           db.tx.memberships[membershipsId].link({ teams: teamId }),
         ]);
+        console.log('HERE TOO');
 
         console.log(result);
       } catch (e) {
+        console.log('OTHERWISE HERE TOO');
         console.log(e);
       }
     }
@@ -81,8 +77,6 @@
 
   async function makeTeam(e: Event) {
     e.preventDefault();
-
-    console.log('HEREERE');
 
     if (user.authState) {
       try {
@@ -139,6 +133,15 @@
         Create
       </button>
     </form>
+
+    <button
+      type="button"
+      onclick={() => {
+        logout();
+      }}
+    >
+      LOG OUT
+    </button>
   </div>
 {:else}
   <div class="grid grid-cols-1 gap-4">
