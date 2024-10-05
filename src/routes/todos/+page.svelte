@@ -10,20 +10,100 @@
 
   const selectedTeamState = teamState();
 
-  let todos: Todos = $state([]);
+  // empty array for each day of the week
+  let todos: [Todos, Todos, Todos, Todos, Todos, Todos, Todos] = $state([
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+  ]);
   let todoText: string = $state('');
   let todoDate: number | undefined = $state();
+  const weekStart: number = getWeekStart();
+  const currentDayDate: Date = getCurrentDayDate();
+  const currentDayTime: number = currentDayDate.getTime();
+  const dayMilliseconds: number = 24 * 60 * 60 * 1000;
+  const weekdays = [
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday',
+  ];
+
+  function getWeekStart() {
+    let today = new Date();
+
+    var day = today.getDay() || 7; // Get current day number, converting Sun. to 7
+    // Set the hours to day number minus 1
+    //   multiplied by negative 24
+    today.setHours(-24 * (day - 1), 0, 0, 0);
+
+    return today.getTime();
+  }
+
+  function getCurrentDayDate() {
+    let today = new Date();
+    var day = today.getDay() || 7; // Get current day number, converting Sun. to 7
+    // Set the hours to day number minus 1
+    //   multiplied by negative 24
+    today.setHours(0, 0, 0, 0);
+
+    return today;
+  }
 
   onMount(() => {
     const unsubQuery = db.subscribeQuery(
-      {
-        todos: {
-          $: { where: { teams: selectedTeamState.teamId, done: false } },
-        },
-      },
+      selectedTeamState.teamDefault
+        ? {
+            todos: {
+              $: {
+                where: {
+                  done: false,
+                },
+              },
+            },
+          }
+        : {
+            todos: {
+              $: {
+                where: {
+                  teams: selectedTeamState.teamId,
+                  done: false,
+                },
+              },
+            },
+          },
       (resp) => {
         if (resp.data) {
-          todos = resp.data.todos;
+          const allTodos = resp.data.todos;
+
+          let startOfDay = currentDayTime;
+          let endOfDay = currentDayTime + dayMilliseconds;
+
+          for (let i = currentDayDate.getDay(); i <= 7; i++) {
+            if (i === currentDayDate.getDay()) {
+              todos[i - 1] = allTodos.filter((x) => {
+                return x.date === undefined || x.date < endOfDay;
+              });
+            } else {
+              todos[i - 1] = allTodos.filter((x) => {
+                return (
+                  x.date !== undefined &&
+                  x.date < endOfDay &&
+                  x.date >= startOfDay
+                );
+              });
+            }
+
+            startOfDay += dayMilliseconds;
+            endOfDay += dayMilliseconds;
+          }
         }
       },
     );
@@ -106,16 +186,23 @@
     </button>
   </form>
 
-  {#each todos as todo}
-    <div class="p-8 flex flex-col gap-4">
-      <button
-        type="button"
-        onclick={() => {
-          finishTodo(todo);
-        }}
-      >
-        {todo.text},{todo.date},{todo.done}
-      </button>
-    </div>
+  {$inspect(todos)}
+
+  {#each todos as dayTodos, index}
+    {console.log('Index', index)}
+    <h2>{weekdays[index]}</h2>
+
+    {#each dayTodos as todo}
+      <div class="p-8 flex flex-col gap-4">
+        <button
+          type="button"
+          onclick={() => {
+            finishTodo(todo);
+          }}
+        >
+          {todo.text},{todo.date},{todo.done}
+        </button>
+      </div>
+    {/each}
   {/each}
 </div>

@@ -1,5 +1,6 @@
 let teamName = $state('');
 let teamId = $state('');
+let teamDefault = $state(false);
 
 export function teamState() {
   function setTeamName(name: string) {
@@ -10,6 +11,10 @@ export function teamState() {
     teamId = id;
   }
 
+  function setTeamDefault(defaut: boolean) {
+    teamDefault = defaut;
+  }
+
   return {
     get teamName() {
       return teamName;
@@ -17,7 +22,11 @@ export function teamState() {
     get teamId() {
       return teamId;
     },
+    get teamDefault() {
+      return teamDefault;
+    },
     setTeamName,
     setTeamId,
+    setTeamDefault,
   };
 }

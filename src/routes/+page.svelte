@@ -187,6 +187,7 @@
           onclick={() => {
             selectedTeamState.setTeamId(team.id);
             selectedTeamState.setTeamName(team.name);
+            selectedTeamState.setTeamDefault(team.isDefault);
 
             goto(`/team`);
           }}
@@ -198,6 +199,7 @@
           onclick={() => {
             selectedTeamState.setTeamId(team.id);
             selectedTeamState.setTeamName(team.name);
+            selectedTeamState.setTeamDefault(team.isDefault);
 
             goto(`/todos`);
           }}
