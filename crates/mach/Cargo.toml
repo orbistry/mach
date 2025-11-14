@@ -4,3 +4,12 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+clap.workspace = true
+color-print.workspace = true
+miette.workspace = true
+ratatui.workspace = true
+sea-orm.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+turso.workspace = true
