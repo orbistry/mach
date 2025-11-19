@@ -92,7 +92,7 @@
 
 ## Implementation Checklist
 
-- [ ] Define SeaORM entity + migration-less schema
+- [x] Define SeaORM entity + migration-less schema
       (Todo table, metadata JSON column, config table if needed).
 - [ ] Implement persistence services: add, list (with filters), delete, reorder,
       move, complete, rollover.

@@ -1,5 +1,6 @@
 mod cli;
 mod cmd;
+pub mod entity;
 
 pub use cli::Cli;
 
