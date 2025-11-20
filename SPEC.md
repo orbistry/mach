@@ -98,7 +98,7 @@
       move, complete, rollover.
 - [x] Wire CLI subcommands to services (`add`, `list`) respecting flags.
 - [x] Build rollover runner invoked on startup + scheduled timer.
-- [ ] Scaffold Ratatui app shell: layout, input handling loop, state store.
+- [x] Scaffold Ratatui app shell: layout, input handling loop, state store.
 - [ ] Implement navigation + selection + reorder semantics (including keeping
       completed todos pinned under active ones).
 - [ ] Support deletion (`dd`) and completion (Super+Enter).

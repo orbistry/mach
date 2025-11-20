@@ -7,6 +7,7 @@ edition = "2024"
 chrono.workspace = true
 clap.workspace = true
 color-print.workspace = true
+crossterm.workspace = true
 directories.workspace = true
 miette.workspace = true
 ratatui.workspace = true

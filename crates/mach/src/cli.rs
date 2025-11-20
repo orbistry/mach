@@ -22,9 +22,7 @@ impl Cli {
 
         match self.cmd {
             Some(cmd) => cmd.exec(&services).await,
-            None => {
-                todo!("start the tui")
-            }
+            None => crate::tui::run(services).await,
         }
     }
 }

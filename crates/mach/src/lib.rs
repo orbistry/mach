@@ -2,6 +2,7 @@ mod cli;
 mod cmd;
 pub mod entity;
 pub mod service;
+pub mod tui;
 
 pub use cli::Cli;
 
