@@ -1,3 +1,8 @@
+use crate::service::{
+    Services,
+    todo::{ListOptions, ListScope},
+};
+
 /// List all todos in a table
 #[derive(clap::Args)]
 pub struct Args {
@@ -11,7 +16,43 @@ pub struct Args {
 }
 
 impl Args {
-    pub async fn exec(self) -> miette::Result<()> {
+    pub async fn exec(self, services: &Services) -> miette::Result<()> {
+        let scope = if self.some_day {
+            ListScope::Backlog
+        } else {
+            ListScope::Day(services.today())
+        };
+
+        let opts = ListOptions {
+            scope,
+            include_done: self.done,
+        };
+        let todos = services.todos.list(opts).await?;
+
+        if todos.is_empty() {
+            println!("No todos found.");
+            return Ok(());
+        }
+
+        println!("{:<8} {:<12} {:<7} Title", "Status", "Day", "Order");
+        println!("{}", "-".repeat(60));
+
+        for todo in todos {
+            let day = todo
+                .scheduled_for
+                .map(|d| d.to_string())
+                .unwrap_or_else(|| "Someday".to_string());
+            let status = if todo.status == "done" {
+                "done"
+            } else {
+                "todo"
+            };
+            println!(
+                "{:<8} {:<12} {:<7} {}",
+                status, day, todo.order_index, todo.title
+            );
+        }
+
         Ok(())
     }
 }

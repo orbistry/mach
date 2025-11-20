@@ -94,10 +94,10 @@
 
 - [x] Define SeaORM entity + migration-less schema
       (Todo table, metadata JSON column, config table if needed).
-- [ ] Implement persistence services: add, list (with filters), delete, reorder,
+- [x] Implement persistence services: add, list (with filters), delete, reorder,
       move, complete, rollover.
-- [ ] Wire CLI subcommands to services (`add`, `list`) respecting flags.
-- [ ] Build rollover runner invoked on startup + scheduled timer.
+- [x] Wire CLI subcommands to services (`add`, `list`) respecting flags.
+- [x] Build rollover runner invoked on startup + scheduled timer.
 - [ ] Scaffold Ratatui app shell: layout, input handling loop, state store.
 - [ ] Implement navigation + selection + reorder semantics (including keeping
       completed todos pinned under active ones).

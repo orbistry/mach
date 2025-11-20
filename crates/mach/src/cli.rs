@@ -1,6 +1,6 @@
 use clap::Parser;
 
-use crate::{BANNER, cmd};
+use crate::{BANNER, cmd, service::Services};
 
 #[derive(Parser)]
 #[clap(version, about, long_about = Some(BANNER))]
@@ -18,8 +18,9 @@ impl Default for Cli {
 
 impl Cli {
     pub async fn exec(self) -> miette::Result<()> {
+        let services = Services::bootstrap().await?;
         match self.cmd {
-            Some(cmd) => cmd.exec().await,
+            Some(cmd) => cmd.exec(&services).await,
             None => {
                 todo!("start the tui")
             }

@@ -8,10 +8,10 @@ pub enum Cmd {
 }
 
 impl Cmd {
-    pub async fn exec(self) -> miette::Result<()> {
+    pub async fn exec(self, services: &crate::service::Services) -> miette::Result<()> {
         match self {
-            Cmd::Add(args) => args.exec().await,
-            Cmd::List(args) => args.exec().await,
+            Cmd::Add(args) => args.exec(services).await,
+            Cmd::List(args) => args.exec(services).await,
         }
     }
 }

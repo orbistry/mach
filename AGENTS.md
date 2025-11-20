@@ -15,6 +15,8 @@
   aim for visual parity with the Tweek reference.
 - `cargo fmt --all`, `cargo clippy --workspace --all-targets -- -D warnings`,
   and `cargo test --workspace -- --nocapture` gate every commit.
+- `cargo clippy` is better than `cargo check`. Feel free to use
+  `cargo clippy --fix --allow-dirty`
 
 ## Database Stack (SeaORM 2 + Turso)
 
