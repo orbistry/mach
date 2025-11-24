@@ -1,3 +1,4 @@
+pub mod config;
 pub mod connection;
 pub mod todo;
 
@@ -7,11 +8,12 @@ use chrono::{Local, NaiveDate};
 use directories::ProjectDirs;
 use miette::{Context, IntoDiagnostic};
 
-use self::{connection::init_database, todo::TodoService};
+use self::{config::ConfigService, connection::init_database, todo::TodoService};
 
 #[derive(Clone)]
 pub struct Services {
     pub todos: TodoService,
+    pub config: ConfigService,
     today: NaiveDate,
 }
 
@@ -22,12 +24,17 @@ impl Services {
         let conn = init_database(&db_path).await?;
 
         let todos = TodoService::new(conn.clone());
+        let config = ConfigService::new(conn.clone());
 
         let today = Local::now().date_naive();
 
         todos.rollover_to(today).await?;
 
-        Ok(Self { todos, today })
+        Ok(Self {
+            todos,
+            config,
+            today,
+        })
     }
 
     pub fn today(&self) -> NaiveDate {

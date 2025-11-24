@@ -66,7 +66,8 @@
     any completed entries.
 - **Editing**
   - `dd`: delete highlighted todo (prompt for confirmation if desired).
-- `Super+Enter` (Cmd/Ctrl+Enter) marks todo as completed.
+  - `x`: toggle completion status on the focused/selected todo.
+  - `s`: move the focused/selected todo to Someday/backlog (pending items only).
 - **Other hotkeys** (future): `/` to search, `a` to add inline, `?` help.
 
 ## Persistence & Sync
@@ -101,7 +102,7 @@
 - [x] Scaffold Ratatui app shell: layout, input handling loop, state store.
 - [x] Implement navigation + selection + reorder semantics (including keeping
       completed todos pinned under active ones).
-- [x] Support deletion (`dd`) and completion (Super+Enter).
+- [x] Support deletion (`dd`) and completion toggle (`x`).
 - [x] Render backlog column distinct from dated columns.
 - [ ] Add configuration loading/saving (week start toggle via TUI modal, future
       keybindings).
@@ -115,6 +116,6 @@
 - Should deletion be permanent or soft-delete (status `archived`)? For now,
   permanent with possible undo later.
 - Need accessibility plan for non-Vim users (perhaps optional Emacs/Arrow mode).
-- Keybinding for `Super+Enter` may differ across terminals—consider fallback (`Shift+Enter`).
+- Completion keybindings should remain customizable; default is `x` but expose it via settings later in case platforms reserve it.
 
 This SPEC should evolve; update checkpoints as tasks complete or requirements shift.
