@@ -9,8 +9,11 @@ repository = "https://github.com/orbistry/mach"
 license = "MIT/Apache-2.0"
 
 [workspace.dependencies]
+chrono = { version = "0.4.39", default-features = false, features = [
+  "clock",
+  "serde"
+] }
 clap = { version = "4.5.51", features = ["derive"] }
-chrono = { version = "0.4.39", default-features = false, features = ["clock", "serde"] }
 color-print = "0.3.7"
 crossterm = "0.28.1"
 directories = "5.0.1"
@@ -36,3 +39,8 @@ thiserror = "2.0.17"
 tokio = { version = "1.48.0", features = ["full"] }
 turso = "0.3.2"
 uuid = { version = "1.11.0", features = ["serde", "v4"] }
+
+# The profile that 'dist' will build with
+[profile.dist]
+inherits = "release"
+lto = "thin"
