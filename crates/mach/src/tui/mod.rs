@@ -126,13 +126,17 @@ impl App {
     }
 
     fn handle_key_event(&mut self, key: KeyEvent) {
-        match self.ui_mode {
+        match &self.ui_mode {
             UiMode::Settings(_) => {
                 self.handle_settings_key(key);
                 return;
             }
             UiMode::Backlog => {
                 self.handle_backlog_key(key);
+                return;
+            }
+            UiMode::AddTodo(_) => {
+                self.handle_add_todo_key(key);
                 return;
             }
             UiMode::Board => {}
@@ -155,6 +159,9 @@ impl App {
             KeyCode::Esc => self.should_quit = true,
             KeyCode::Char('g') if key.modifiers.is_empty() => {
                 self.pending_g = true;
+            }
+            KeyCode::Char('a') if key.modifiers.is_empty() => {
+                self.open_add_todo_board();
             }
             KeyCode::Char('b') if key.modifiers.is_empty() => {
                 self.open_backlog();
@@ -188,12 +195,19 @@ impl App {
     }
 
     fn draw(&mut self, frame: &mut Frame<'_>) {
-        match self.ui_mode {
+        match &self.ui_mode {
             UiMode::Board => self.draw_board(frame),
             UiMode::Backlog => self.draw_backlog_view(frame),
-            UiMode::Settings(ref settings) => {
+            UiMode::Settings(settings) => {
                 self.draw_board(frame);
                 self.draw_settings(frame, settings);
+            }
+            UiMode::AddTodo(state) => {
+                match state.target {
+                    AddTarget::Day(_) => self.draw_board(frame),
+                    AddTarget::BacklogColumn(_) => self.draw_backlog_view(frame),
+                }
+                self.draw_add_todo(frame, state);
             }
         }
     }
@@ -657,6 +671,9 @@ impl App {
             KeyCode::Char('x') if key.modifiers.is_empty() => {
                 self.mark_backlog_complete().ok();
             }
+            KeyCode::Char('a') if key.modifiers.is_empty() => {
+                self.open_add_todo_backlog();
+            }
             KeyCode::Char('t') if key.modifiers.is_empty() => {
                 self.move_backlog_to_day(0).ok();
             }
@@ -925,6 +942,90 @@ impl App {
         frame.render_widget(Clear, area);
         frame.render_widget(paragraph, area);
     }
+
+    fn open_add_todo_board(&mut self) {
+        let target_date = self.state.columns[self.cursor.focus].date;
+        self.ui_mode = UiMode::AddTodo(AddTodoState {
+            input: String::new(),
+            target: AddTarget::Day(target_date),
+        });
+    }
+
+    fn open_add_todo_backlog(&mut self) {
+        self.ui_mode = UiMode::AddTodo(AddTodoState {
+            input: String::new(),
+            target: AddTarget::BacklogColumn(self.backlog_cursor.column),
+        });
+    }
+
+    fn handle_add_todo_key(&mut self, key: KeyEvent) {
+        let UiMode::AddTodo(ref mut state) = self.ui_mode else {
+            return;
+        };
+
+        match key.code {
+            KeyCode::Esc => {
+                self.ui_mode = match state.target {
+                    AddTarget::Day(_) => UiMode::Board,
+                    AddTarget::BacklogColumn(_) => UiMode::Backlog,
+                };
+            }
+            KeyCode::Enter => {
+                let input = std::mem::take(&mut state.input);
+                let target = state.target.clone();
+                if !input.trim().is_empty() {
+                    self.submit_add_todo(input.trim().to_string(), target.clone())
+                        .ok();
+                }
+                self.ui_mode = match target {
+                    AddTarget::Day(_) => UiMode::Board,
+                    AddTarget::BacklogColumn(_) => UiMode::Backlog,
+                };
+            }
+            KeyCode::Char(c) => {
+                state.input.push(c);
+            }
+            KeyCode::Backspace => {
+                state.input.pop();
+            }
+            _ => {}
+        }
+    }
+
+    fn submit_add_todo(&mut self, title: String, target: AddTarget) -> miette::Result<()> {
+        match target {
+            AddTarget::Day(date) => {
+                self.runtime
+                    .block_on(self.services.todos.add(&title, Some(date), None))?;
+                self.refresh_board()?;
+            }
+            AddTarget::BacklogColumn(col) => {
+                let model = self
+                    .runtime
+                    .block_on(self.services.todos.add(&title, None, None))?;
+                self.runtime
+                    .block_on(self.services.todos.set_backlog_column(model.id, col as i64))?;
+                self.refresh_backlog()?;
+            }
+        }
+        Ok(())
+    }
+
+    fn draw_add_todo(&self, frame: &mut Frame<'_>, state: &AddTodoState) {
+        let area = centered_rect(60, 15, frame.area());
+        let block = Block::default()
+            .title("Add Todo")
+            .borders(Borders::ALL)
+            .border_style(Style::default().fg(Color::Cyan));
+
+        let inner = block.inner(area);
+        frame.render_widget(Clear, area);
+        frame.render_widget(block, area);
+
+        let input_line = Line::from(format!("› {}_", state.input))
+            .style(Style::default().fg(Color::Yellow));
+        frame.render_widget(Paragraph::new(input_line), inner);
+    }
 }
 
 struct WeekState {
@@ -967,10 +1068,23 @@ struct SettingsState {
     week_start: WeekStart,
 }
 
+#[derive(Clone)]
+struct AddTodoState {
+    input: String,
+    target: AddTarget,
+}
+
+#[derive(Clone)]
+enum AddTarget {
+    Day(NaiveDate),
+    BacklogColumn(usize),
+}
+
 enum UiMode {
     Board,
     Backlog,
     Settings(SettingsState),
+    AddTodo(AddTodoState),
 }
 
 fn build_columns(week_start: NaiveDate) -> Vec<ColumnMeta> {
