@@ -321,7 +321,11 @@ impl App {
         };
 
         let items = self.board.days.get(idx).map(|d| d.as_slice()).unwrap_or(&[]);
-        let highlight_row = self.cursor.row_for(idx, &self.board);
+        let highlight_row = if focused {
+            self.cursor.row_for(idx, &self.board)
+        } else {
+            None
+        };
         let lines = self.build_todo_lines_with_separators(items, area.width, highlight_row, |row| {
             self.cursor.line_style(idx, row, &self.board)
         });
@@ -353,13 +357,19 @@ impl App {
     where
         F: Fn(usize) -> Style,
     {
-        let separator_line = Line::from("-".repeat(width as usize))
-            .style(Style::default().fg(Color::DarkGray));
+        let separator = "-".repeat(width as usize);
 
         let mut lines = Vec::with_capacity(items.len() * 2);
         for (i, item) in items.iter().enumerate() {
             if i > 0 {
-                lines.push(separator_line.clone());
+                let adjacent_to_focus =
+                    highlight_row == Some(i - 1) || highlight_row == Some(i);
+                let sep_style = if adjacent_to_focus {
+                    Style::default().fg(Color::Yellow)
+                } else {
+                    Style::default().fg(Color::DarkGray)
+                };
+                lines.push(Line::from(separator.clone()).style(sep_style));
             }
             let mut line = item.to_line();
             if highlight_row == Some(i) {
