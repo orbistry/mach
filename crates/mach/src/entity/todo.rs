@@ -18,6 +18,8 @@ pub struct Model {
     pub scheduled_for: Option<Date>,
     #[sea_orm(default_value = 0)]
     pub order_index: i64,
+    #[sea_orm(default_value = 0)]
+    pub backlog_column: i64,
     pub created_at: DateTimeUtc,
     pub updated_at: DateTimeUtc,
     pub notes: Option<String>,
