@@ -135,6 +135,10 @@ mach list --done       # completed items
 - Completed todos sink to the bottom of their column
 - New todos appear at the top of the column
 
+## Sponsor
+
+If you find mach useful, consider [sponsoring](https://github.com/sponsors/rvcas) its development.
+
 ## License
 
 [Apache-2.0](LICENSE)

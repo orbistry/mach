@@ -17,6 +17,11 @@ export default defineConfig({
           label: "GitHub",
           href: "https://github.com/rvcas/mach",
         },
+        {
+          icon: "heart",
+          label: "Sponsor",
+          href: "https://github.com/sponsors/rvcas",
+        },
       ],
       sidebar: [
         {
