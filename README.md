@@ -12,18 +12,42 @@ A terminal-based weekly planner inspired by [Tweek](https://tweek.so). Plan your
 
 ## Installation
 
+### Homebrew
+
+```sh
+brew install rvcas/tap/mach
+```
+
+### Shell (Linux/macOS)
+
+```sh
+curl --proto '=https' --tlsv1.2 -LsSf https://github.com/rvcas/mach/releases/latest/download/machich-installer.sh | sh
+```
+
+### PowerShell (Windows)
+
+```powershell
+powershell -ExecutionPolicy Bypass -c "irm https://github.com/rvcas/mach/releases/latest/download/machich-installer.ps1 | iex"
+```
+
+### npm/pnpm/bun
+
+```sh
+npm install -g @rvcas/mach
+```
+
+### Cargo
+
+```sh
+cargo install machich
+```
+
 ### From source
 
 ```sh
-git clone https://github.com/orbistry/mach
+git clone https://github.com/rvcas/mach
 cd mach
 cargo install --path crates/mach
-```
-
-### With Cargo
-
-```sh
-cargo install mach
 ```
 
 ## Quick Start
