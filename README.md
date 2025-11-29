@@ -61,8 +61,8 @@ mach
 Add a todo from the command line:
 
 ```sh
-mach add "Buy groceries"
-mach add --some-day "Learn piano"
+mach add Buy groceries
+mach add --some-day Learn piano
 ```
 
 List todos:
