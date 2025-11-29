@@ -30,6 +30,15 @@ use crate::{
     },
 };
 
+mod palette {
+    use ratatui::style::Color;
+
+    pub const COLUMN_FOCUS: Color = Color::Rgb(50, 150, 255);
+    pub const ROW_FOCUS: Color = Color::Rgb(255, 165, 0);
+    pub const SELECTED: Color = Color::Magenta;
+    pub const UNFOCUSED: Color = Color::Rgb(100, 100, 100);
+}
+
 /// Launch the Ratatui application, blocking on the UI event loop.
 pub async fn run(services: Services) -> miette::Result<()> {
     let handle = Handle::current();
@@ -237,9 +246,9 @@ impl App {
                 let sep_idx = i / 2;
                 let adjacent_to_focus = sep_idx == focused || sep_idx + 1 == focused;
                 let style = if adjacent_to_focus {
-                    Style::default().fg(Color::Cyan)
+                    Style::default().fg(palette::COLUMN_FOCUS)
                 } else {
-                    Style::default().fg(Color::DarkGray)
+                    Style::default().fg(palette::UNFOCUSED)
                 };
                 let lines: Vec<Line<'_>> = (0..area.height).map(|_| Line::from("│")).collect();
                 let separator = Paragraph::new(lines).style(style);
@@ -252,7 +261,7 @@ impl App {
         let outer = Block::default()
             .title("Someday / Backlog")
             .borders(Borders::ALL)
-            .border_style(Style::default().fg(Color::Cyan));
+            .border_style(Style::default().fg(palette::COLUMN_FOCUS));
 
         let inner = outer.inner(frame.area());
         frame.render_widget(outer, frame.area());
@@ -280,9 +289,9 @@ impl App {
                 let sep_idx = i / 2;
                 let adjacent_to_focus = sep_idx == focused || sep_idx + 1 == focused;
                 let style = if adjacent_to_focus {
-                    Style::default().fg(Color::Cyan)
+                    Style::default().fg(palette::COLUMN_FOCUS)
                 } else {
-                    Style::default().fg(Color::DarkGray)
+                    Style::default().fg(palette::UNFOCUSED)
                 };
                 let lines: Vec<Line<'_>> = (0..area.height).map(|_| Line::from("│")).collect();
                 let separator = Paragraph::new(lines).style(style);
@@ -318,7 +327,7 @@ impl App {
 
         let title_style = if focused {
             Style::default()
-                .fg(Color::Cyan)
+                .fg(palette::COLUMN_FOCUS)
                 .add_modifier(Modifier::BOLD)
         } else {
             Style::default()
@@ -386,9 +395,9 @@ impl App {
                 let adjacent_to_focus =
                     highlight_row == Some(i - 1) || highlight_row == Some(i);
                 let sep_style = if adjacent_to_focus {
-                    Style::default().fg(Color::Yellow)
+                    Style::default().fg(palette::ROW_FOCUS)
                 } else {
-                    Style::default().fg(Color::DarkGray)
+                    Style::default().fg(palette::UNFOCUSED)
                 };
                 lines.push(Line::from(separator.clone()).style(sep_style));
             }
@@ -397,7 +406,7 @@ impl App {
             if is_selected {
                 line.style = line.style.patch(
                     Style::default()
-                        .fg(Color::Magenta)
+                        .fg(palette::SELECTED)
                         .add_modifier(Modifier::BOLD),
                 );
             } else if highlight_row == Some(i) {
@@ -927,7 +936,7 @@ impl App {
         let block = Block::default()
             .title("Settings")
             .borders(Borders::ALL)
-            .border_style(Style::default().fg(Color::Magenta));
+            .border_style(Style::default().fg(palette::SELECTED));
 
         let week_text = match settings.week_start {
             WeekStart::Sunday => "Week Start: Sunday",

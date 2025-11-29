@@ -10,7 +10,7 @@ A terminal-based weekly planner inspired by [Tweek](https://tweek.so). Plan your
 - **Backlog view** — 4-column organizer for "someday" items
 - **Vim navigation** — `h/j/k/l` to move, `Enter` to select and drag
 - **Local-first** — SQLite storage, no cloud, no account needed
-- **Colorblind-friendly** — Cyan/Yellow/Magenta palette for clear focus states
+- **High contrast** — Bright cyan/yellow/magenta palette for clear visibility
 
 ## Installation
 
