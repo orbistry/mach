@@ -32,7 +32,7 @@ pub async fn init_database(path: impl AsRef<Path>) -> miette::Result<DatabaseCon
         .into_diagnostic()
         .wrap_err("failed to open SeaORM SQLite connection")?;
 
-    conn.get_schema_registry("mach::entity::*")
+    conn.get_schema_registry("machich::entity::*")
         .sync(&conn)
         .await
         .into_diagnostic()

@@ -1,3 +1,7 @@
+# Version 0.2.1 (2025-11-28)
+
+- Fix schema registry path causing "no such table" error on first run
+
 # Version 0.2.0 (2025-11-28)
 
 - Add fullscreen Backlog view (`b` key) with 4-column layout for organizing someday items
