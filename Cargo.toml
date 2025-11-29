@@ -8,7 +8,7 @@ authors = ["rvcas <x@rvcas.dev>"]
 edition = "2024"
 description = "A CLI tool for managing todos with a weekly calendar"
 repository = "https://github.com/orbistry/mach"
-license-file = "LICENSE"
+license = "MIT"
 
 [workspace.dependencies]
 chrono = { version = "0.4.39", default-features = false, features = [
