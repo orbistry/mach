@@ -14,7 +14,7 @@ use ratatui::{
     Frame, Terminal,
     backend::CrosstermBackend,
     layout::{Constraint, Direction, Layout, Rect},
-    style::{Color, Modifier, Style},
+    style::{Modifier, Style},
     text::Line,
     widgets::{Block, Borders, Clear, Paragraph},
 };
@@ -34,19 +34,17 @@ mod palette {
     #![allow(dead_code)]
     use ratatui::style::Color;
 
-    // Neutrals (terminal semantic - adapts to user's theme)
-    pub const TEXT_PRIMARY: Color = Color::Reset;
-    pub const TEXT_MUTED: Color = Color::Gray;
-    pub const SEPARATOR: Color = Color::DarkGray;
-    pub const UNFOCUSED: Color = Color::DarkGray;
+    // Text
+    pub const TEXT: Color = Color::Reset;
+    pub const TEXT_DIM: Color = Color::DarkGray;
 
-    // Focus & selection
-    pub const COLUMN_FOCUS: Color = Color::Blue;
-    pub const ROW_FOCUS: Color = Color::Yellow;
-    pub const SELECTED: Color = Color::Magenta;
+    // States (hierarchy: ACCENT > ACTIVE > FOCUS)
+    pub const FOCUS: Color = Color::LightBlue;
+    pub const ACTIVE: Color = Color::Yellow;
+    pub const ACCENT: Color = Color::Magenta;
 
-    // Todo states
-    pub const COMPLETED: Color = Color::DarkGray;
+    // Chrome
+    pub const BORDER: Color = Color::DarkGray;
 }
 
 /// Launch the Ratatui application, blocking on the UI event loop.
@@ -256,9 +254,9 @@ impl App {
                 let sep_idx = i / 2;
                 let adjacent_to_focus = sep_idx == focused || sep_idx + 1 == focused;
                 let style = if adjacent_to_focus {
-                    Style::default().fg(palette::COLUMN_FOCUS)
+                    Style::default().fg(palette::FOCUS)
                 } else {
-                    Style::default().fg(palette::UNFOCUSED)
+                    Style::default().fg(palette::BORDER)
                 };
                 let lines: Vec<Line<'_>> = (0..area.height).map(|_| Line::from("│")).collect();
                 let separator = Paragraph::new(lines).style(style);
@@ -271,7 +269,7 @@ impl App {
         let outer = Block::default()
             .title("Someday / Backlog")
             .borders(Borders::ALL)
-            .border_style(Style::default().fg(palette::COLUMN_FOCUS));
+            .border_style(Style::default().fg(palette::FOCUS));
 
         let inner = outer.inner(frame.area());
         frame.render_widget(outer, frame.area());
@@ -299,9 +297,9 @@ impl App {
                 let sep_idx = i / 2;
                 let adjacent_to_focus = sep_idx == focused || sep_idx + 1 == focused;
                 let style = if adjacent_to_focus {
-                    Style::default().fg(palette::COLUMN_FOCUS)
+                    Style::default().fg(palette::FOCUS)
                 } else {
-                    Style::default().fg(palette::UNFOCUSED)
+                    Style::default().fg(palette::BORDER)
                 };
                 let lines: Vec<Line<'_>> = (0..area.height).map(|_| Line::from("│")).collect();
                 let separator = Paragraph::new(lines).style(style);
@@ -337,10 +335,10 @@ impl App {
 
         let title_style = if focused {
             Style::default()
-                .fg(palette::COLUMN_FOCUS)
+                .fg(palette::FOCUS)
                 .add_modifier(Modifier::BOLD)
         } else {
-            Style::default()
+            Style::default().fg(palette::TEXT)
         };
 
         let title_line = Line::from(column.title.clone()).style(title_style);
@@ -354,7 +352,12 @@ impl App {
             height: area.height.saturating_sub(2),
         };
 
-        let items = self.board.days.get(idx).map(|d| d.as_slice()).unwrap_or(&[]);
+        let items = self
+            .board
+            .days
+            .get(idx)
+            .map(|d| d.as_slice())
+            .unwrap_or(&[]);
         let highlight_row = if focused {
             self.cursor.row_for(idx, &self.board)
         } else {
@@ -402,12 +405,11 @@ impl App {
         let mut lines = Vec::with_capacity(items.len() * 2);
         for (i, item) in items.iter().enumerate() {
             if i > 0 {
-                let adjacent_to_focus =
-                    highlight_row == Some(i - 1) || highlight_row == Some(i);
+                let adjacent_to_focus = highlight_row == Some(i - 1) || highlight_row == Some(i);
                 let sep_style = if adjacent_to_focus {
-                    Style::default().fg(palette::ROW_FOCUS)
+                    Style::default().fg(palette::ACTIVE)
                 } else {
-                    Style::default().fg(palette::UNFOCUSED)
+                    Style::default().fg(palette::BORDER)
                 };
                 lines.push(Line::from(separator.clone()).style(sep_style));
             }
@@ -416,7 +418,7 @@ impl App {
             if is_selected {
                 line.style = line.style.patch(
                     Style::default()
-                        .fg(palette::SELECTED)
+                        .fg(palette::ACCENT)
                         .add_modifier(Modifier::BOLD),
                 );
             } else if highlight_row == Some(i) {
@@ -696,7 +698,9 @@ impl App {
             KeyCode::Char('t') if key.modifiers.is_empty() => {
                 self.move_backlog_to_day(0).ok();
             }
-            KeyCode::Char('T') | KeyCode::Char('t') if key.modifiers.contains(KeyModifiers::SHIFT) => {
+            KeyCode::Char('T') | KeyCode::Char('t')
+                if key.modifiers.contains(KeyModifiers::SHIFT) =>
+            {
                 self.move_backlog_to_day(1).ok();
             }
             KeyCode::Char('d') if key.modifiers.is_empty() => {
@@ -946,7 +950,7 @@ impl App {
         let block = Block::default()
             .title("Settings")
             .borders(Borders::ALL)
-            .border_style(Style::default().fg(palette::SELECTED));
+            .border_style(Style::default().fg(palette::FOCUS));
 
         let week_text = match settings.week_start {
             WeekStart::Sunday => "Week Start: Sunday",
@@ -1035,14 +1039,14 @@ impl App {
         let block = Block::default()
             .title("Add Todo")
             .borders(Borders::ALL)
-            .border_style(Style::default().fg(Color::Cyan));
+            .border_style(Style::default().fg(palette::FOCUS));
 
         let inner = block.inner(area);
         frame.render_widget(Clear, area);
         frame.render_widget(block, area);
 
-        let input_line = Line::from(format!("› {}_", state.input))
-            .style(Style::default().fg(Color::Yellow));
+        let input_line =
+            Line::from(format!("› {}_", state.input)).style(Style::default().fg(palette::ACTIVE));
         frame.render_widget(Paragraph::new(input_line), inner);
     }
 }
@@ -1271,10 +1275,10 @@ impl TodoView {
         let mut line = Line::from(text);
         if self.status == "done" {
             line.style = Style::default()
-                .fg(palette::COMPLETED)
+                .fg(palette::TEXT_DIM)
                 .add_modifier(Modifier::CROSSED_OUT | Modifier::DIM);
         } else {
-            line.style = Style::default().fg(palette::TEXT_PRIMARY);
+            line.style = Style::default().fg(palette::TEXT);
         }
         line
     }
@@ -1340,7 +1344,7 @@ impl CursorState {
             && selection.row == Some(row)
         {
             return Style::default()
-                .fg(palette::SELECTED)
+                .fg(palette::ACCENT)
                 .add_modifier(Modifier::BOLD);
         }
 
@@ -1348,10 +1352,10 @@ impl CursorState {
             && let Some(current_row) = self.row_for(col, board)
             && current_row == row
         {
-            return Style::default().fg(palette::ROW_FOCUS);
+            return Style::default().fg(palette::ACTIVE);
         }
 
-        Style::default().fg(palette::TEXT_PRIMARY)
+        Style::default().fg(palette::TEXT)
     }
 
     fn is_selected(&self, id: Uuid) -> bool {
@@ -1469,7 +1473,7 @@ impl BacklogCursor {
             && selection.row == Some(row)
         {
             return Style::default()
-                .fg(palette::SELECTED)
+                .fg(palette::ACCENT)
                 .add_modifier(Modifier::BOLD);
         }
 
@@ -1477,10 +1481,10 @@ impl BacklogCursor {
             && let Some(current_row) = self.row_for(col, board)
             && current_row == row
         {
-            return Style::default().fg(palette::ROW_FOCUS);
+            return Style::default().fg(palette::ACTIVE);
         }
 
-        Style::default().fg(palette::TEXT_PRIMARY)
+        Style::default().fg(palette::TEXT)
     }
 
     fn is_selected(&self, id: Uuid) -> bool {
