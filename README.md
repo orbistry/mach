@@ -137,4 +137,4 @@ mach list --done       # completed items
 
 ## License
 
-[MIT](LICENSE)
+[Apache-2.0](LICENSE)

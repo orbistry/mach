@@ -8,7 +8,7 @@ edition = "2024"
 description = "A CLI tool for managing todos with a weekly calendar"
 homepage = "https://machich.co"
 repository = "https://github.com/rvcas/mach"
-license = "MIT"
+license = "Apache-2.0"
 
 [workspace.dependencies]
 chrono = { version = "0.4.39", default-features = false, features = [
