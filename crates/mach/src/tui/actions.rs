@@ -7,7 +7,7 @@ use crate::service::todo::{ListOptions, ListScope, MovePlacement, ReorderDirecti
 use super::App;
 use super::cursor::{CursorState, Horizontal, Selection};
 use super::modes::{AddTarget, AddTodoState, DetailField, DetailState, SettingsState, UiMode};
-use super::state::{BoardData, TodoView, WeekState, BACKLOG_COLUMNS};
+use super::state::{BACKLOG_COLUMNS, BoardData, TodoView, WeekState};
 
 impl App {
     pub fn refresh_board(&mut self) -> miette::Result<()> {
@@ -16,7 +16,9 @@ impl App {
                 scope: ListScope::Day(column.date),
                 include_done: true,
             };
+
             let todos = self.runtime.block_on(self.services.todos.list(opts))?;
+
             self.board
                 .set_day(idx, todos.into_iter().map(TodoView::from).collect());
         }
@@ -38,6 +40,7 @@ impl App {
             }))?;
 
         let mut columns: [Vec<TodoView>; BACKLOG_COLUMNS] = Default::default();
+
         for todo in all_backlog {
             let col = (todo.backlog_column as usize).min(BACKLOG_COLUMNS - 1);
             columns[col].push(TodoView::from(todo));
@@ -69,6 +72,7 @@ impl App {
     pub fn delete_current(&mut self) -> miette::Result<()> {
         if let Some(id) = self.current_target_id() {
             let deleted = self.runtime.block_on(self.services.todos.delete(id))?;
+
             if deleted {
                 self.cursor.selection = None;
                 self.refresh_board()?;
@@ -80,6 +84,7 @@ impl App {
     pub fn delete_backlog_current(&mut self) -> miette::Result<()> {
         if let Some(id) = self.backlog_current_target_id() {
             let deleted = self.runtime.block_on(self.services.todos.delete(id))?;
+
             if deleted {
                 self.backlog_cursor.selection = None;
                 self.refresh_backlog()?;
@@ -98,6 +103,7 @@ impl App {
 
             let focus = self.cursor.focus;
             let prev_row = self.cursor.row_for(focus, &self.board);
+
             self.cursor.selection = None;
 
             if current_status == "done" {
@@ -105,6 +111,7 @@ impl App {
                     .block_on(self.services.todos.mark_pending(id))?;
             } else {
                 let today = self.services.today();
+
                 self.runtime
                     .block_on(self.services.todos.mark_done(id, today))?;
             }
@@ -115,8 +122,10 @@ impl App {
                 self.cursor.set_focus_row(new_col, row);
             } else if let Some(row) = prev_row {
                 let len = self.board.day_len(focus);
+
                 if len > 0 {
                     let new_row = row.min(len.saturating_sub(1));
+
                     self.cursor.set_focus_row(focus, new_row);
                 }
             }
@@ -133,7 +142,9 @@ impl App {
                 .to_string();
 
             let col = self.backlog_cursor.column;
+
             let prev_row = self.backlog_cursor.row_for(col, &self.board);
+
             self.backlog_cursor.selection = None;
 
             if current_status == "done" {
@@ -141,6 +152,7 @@ impl App {
                     .block_on(self.services.todos.mark_pending(id))?;
             } else {
                 let today = self.services.today();
+
                 self.runtime
                     .block_on(self.services.todos.mark_done(id, today))?;
             }
@@ -149,9 +161,11 @@ impl App {
 
             if let Some((new_col, row)) = self.board.find_backlog_position(id) {
                 self.backlog_cursor.column = new_col;
+
                 self.backlog_cursor.rows[new_col] = row;
             } else if let Some(row) = prev_row {
                 let len = self.board.backlog_col_len(col);
+
                 if len > 0 {
                     self.backlog_cursor.rows[col] = row.min(len.saturating_sub(1));
                 }
@@ -165,12 +179,15 @@ impl App {
             if matches!(self.board.day_status_of(id), Some("done")) {
                 return Ok(());
             }
+
             self.cursor.selection = None;
+
             self.runtime.block_on(self.services.todos.move_to_scope(
                 id,
                 ListScope::Backlog,
                 MovePlacement::Bottom,
             ))?;
+
             self.refresh_board()?;
         }
         Ok(())
@@ -182,13 +199,15 @@ impl App {
         };
 
         let today = self.services.today();
-        self.runtime.block_on(
-            self.services
-                .todos
-                .move_to_scope(id, ListScope::Day(today), MovePlacement::Top),
-        )?;
+
+        self.runtime.block_on(self.services.todos.move_to_scope(
+            id,
+            ListScope::Day(today),
+            MovePlacement::Top,
+        ))?;
 
         self.refresh_board()?;
+
         Ok(())
     }
 
@@ -198,13 +217,15 @@ impl App {
         };
 
         let tomorrow = self.services.today() + ChronoDuration::days(1);
-        self.runtime.block_on(
-            self.services
-                .todos
-                .move_to_scope(id, ListScope::Day(tomorrow), MovePlacement::Top),
-        )?;
+
+        self.runtime.block_on(self.services.todos.move_to_scope(
+            id,
+            ListScope::Day(tomorrow),
+            MovePlacement::Top,
+        ))?;
 
         self.refresh_board()?;
+
         Ok(())
     }
 
@@ -220,6 +241,7 @@ impl App {
         let target_date = self.services.today() + ChronoDuration::days(days_from_today);
 
         self.backlog_cursor.selection = None;
+
         self.runtime.block_on(self.services.todos.move_to_scope(
             id,
             ListScope::Day(target_date),
@@ -227,6 +249,7 @@ impl App {
         ))?;
 
         self.refresh_board()?;
+
         Ok(())
     }
 
@@ -236,10 +259,12 @@ impl App {
         };
 
         let day_count = self.state.columns.len();
+
         let (target_col, week_changed) = match dir {
             Horizontal::Left => {
                 if selection.column == 0 {
                     self.state.prev_week();
+
                     (day_count - 1, true)
                 } else {
                     (selection.column - 1, false)
@@ -248,6 +273,7 @@ impl App {
             Horizontal::Right => {
                 if selection.column + 1 >= day_count {
                     self.state.next_week();
+
                     (0, true)
                 } else {
                     (selection.column + 1, false)
@@ -256,6 +282,7 @@ impl App {
         };
 
         let target_date = self.state.columns[target_col].date;
+
         self.runtime.block_on(self.services.todos.move_to_scope(
             selection.id,
             ListScope::Day(target_date),
@@ -265,6 +292,7 @@ impl App {
         if week_changed {
             self.board.reset(day_count);
         }
+
         self.refresh_board()?;
 
         self.cursor.selection = Some(Selection {
@@ -272,6 +300,7 @@ impl App {
             row: None,
             ..selection
         });
+
         self.cursor.focus = target_col;
 
         Ok(())
@@ -281,9 +310,11 @@ impl App {
         if let Some(selection) = self.cursor.selection {
             self.runtime
                 .block_on(self.services.todos.reorder(selection.id, dir))?;
+
             if let Some(sel) = &mut self.cursor.selection {
                 sel.row = None;
             }
+
             self.refresh_board()?;
         }
         Ok(())
@@ -293,9 +324,11 @@ impl App {
         if let Some(selection) = self.backlog_cursor.selection {
             self.runtime
                 .block_on(self.services.todos.reorder(selection.id, dir))?;
+
             if let Some(sel) = &mut self.backlog_cursor.selection {
                 sel.row = None;
             }
+
             self.refresh_backlog()?;
         }
         Ok(())
@@ -309,6 +342,7 @@ impl App {
         let settings = SettingsState {
             week_start: self.week_pref,
         };
+
         self.ui_mode = UiMode::Settings(settings);
     }
 
@@ -413,7 +447,10 @@ impl App {
             if let Ok(model) = self.runtime.block_on(self.services.todos.mark_pending(id)) {
                 state.status = model.status;
             }
-        } else if let Ok(model) = self.runtime.block_on(self.services.todos.mark_done(id, today)) {
+        } else if let Ok(model) = self
+            .runtime
+            .block_on(self.services.todos.mark_done(id, today))
+        {
             state.status = model.status;
         }
     }

@@ -2,7 +2,7 @@ use ratatui::style::{Modifier, Style};
 use uuid::Uuid;
 
 use super::palette;
-use super::state::{BoardData, BACKLOG_COLUMNS};
+use super::state::{BACKLOG_COLUMNS, BoardData};
 
 #[derive(Clone, Copy)]
 pub enum Horizontal {
@@ -47,10 +47,13 @@ impl CursorState {
 
     pub fn move_vertical(&mut self, dir: Vertical, board: &BoardData) {
         let len = board.day_len(self.focus);
+
         if len == 0 {
             return;
         }
+
         let row = &mut self.day_rows[self.focus];
+
         match dir {
             Vertical::Up => {
                 if *row > 0 {
@@ -63,14 +66,17 @@ impl CursorState {
                 }
             }
         }
+
         self.selection = None;
     }
 
     pub fn row_for(&self, col: usize, board: &BoardData) -> Option<usize> {
         let len = board.day_len(col);
+
         if len == 0 {
             return None;
         }
+
         self.day_rows.get(col).copied().filter(|r| *r < len)
     }
 
@@ -100,6 +106,7 @@ impl CursorState {
 
     pub fn current_todo_id(&self, board: &BoardData) -> Option<Uuid> {
         let row = self.row_for(self.focus, board)?;
+
         board.day_todo_id_at(self.focus, row)
     }
 
@@ -112,6 +119,7 @@ impl CursorState {
 
         for (idx, row) in self.day_rows.iter_mut().enumerate() {
             let len = board.day_len(idx);
+
             if len == 0 {
                 *row = 0;
             } else if *row >= len {
@@ -126,6 +134,7 @@ impl CursorState {
                     row: Some(row),
                     ..selection
                 });
+
                 self.day_rows[col] = row;
             } else {
                 self.selection = None;
@@ -135,9 +144,11 @@ impl CursorState {
 
     pub fn set_focus_row(&mut self, col: usize, row: usize) {
         self.focus = col;
+
         if col < self.day_rows.len() {
             self.day_rows[col] = row;
         }
+
         self.selection = None;
     }
 }
@@ -170,15 +181,19 @@ impl BacklogCursor {
                 }
             }
         }
+
         self.selection = None;
     }
 
     pub fn move_vertical(&mut self, dir: Vertical, board: &BoardData) {
         let len = board.backlog_col_len(self.column);
+
         if len == 0 {
             return;
         }
+
         let row = &mut self.rows[self.column];
+
         match dir {
             Vertical::Up => {
                 if *row > 0 {
@@ -191,15 +206,19 @@ impl BacklogCursor {
                 }
             }
         }
+
         self.selection = None;
     }
 
     pub fn row_for(&self, col: usize, board: &BoardData) -> Option<usize> {
         let len = board.backlog_col_len(col);
+
         if len == 0 {
             return None;
         }
+
         let row = self.rows[col];
+
         if row < len { Some(row) } else { None }
     }
 
@@ -229,6 +248,7 @@ impl BacklogCursor {
 
     pub fn current_todo_id(&self, board: &BoardData) -> Option<Uuid> {
         let row = self.row_for(self.column, board)?;
+
         board.backlog_todo_id_at(self.column, row)
     }
 
@@ -249,6 +269,7 @@ impl BacklogCursor {
                     row: Some(row),
                     ..selection
                 });
+
                 self.rows[col] = row;
             } else {
                 self.selection = None;

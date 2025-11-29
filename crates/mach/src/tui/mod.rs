@@ -23,12 +23,15 @@ use terminal::{TerminalGuard, setup_terminal};
 /// Launch the Ratatui application, blocking on the UI event loop.
 pub async fn run(services: Services) -> miette::Result<()> {
     let handle = Handle::current();
-    tokio::task::spawn_blocking(move || {
+
+    let task = tokio::task::spawn_blocking(move || {
         let mut app = App::new(services, handle);
+
         app.run()
-    })
-    .await
-    .into_diagnostic()??;
+    });
+
+    task.await.into_diagnostic()??;
+
     Ok(())
 }
 
@@ -51,12 +54,15 @@ impl App {
     fn new(services: Services, runtime: Handle) -> Self {
         let today = services.today();
         let week_pref = services.week_start();
+
         let state = WeekState::new(today, week_pref);
         let board = BoardData::new(state.columns.len());
         let mut cursor = CursorState::new(state.columns.len());
+
         if let Some(idx) = state.column_index(today) {
             cursor.set_focus_row(idx, 0);
         }
+
         Self {
             services,
             runtime,
@@ -98,6 +104,7 @@ impl App {
 
             if event::poll(timeout).into_diagnostic()? {
                 let evt = event::read().into_diagnostic()?;
+
                 self.handle_event(evt);
             }
 

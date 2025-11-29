@@ -21,7 +21,9 @@ impl App {
             UiMode::Backlog => self.draw_backlog_view(frame),
             UiMode::Settings(settings) => {
                 self.draw_board(frame);
+
                 let settings = settings.clone();
+
                 self.draw_settings(frame, &settings);
             }
             UiMode::AddTodo(state) => {
@@ -38,7 +40,9 @@ impl App {
                 } else {
                     self.draw_board(frame);
                 }
+
                 let state = state.clone();
+
                 self.draw_detail(frame, &state);
             }
         }
@@ -51,10 +55,12 @@ impl App {
     pub fn draw_board(&self, frame: &mut Frame<'_>) {
         let day_count = self.state.columns.len();
         let mut constraints = Vec::with_capacity(day_count * 2 - 1);
+
         for i in 0..day_count {
             if i > 0 {
                 constraints.push(Constraint::Length(1));
             }
+
             constraints.push(Constraint::Fill(1));
         }
 
@@ -65,20 +71,25 @@ impl App {
 
         let focused = self.cursor.focus;
         let mut col_idx = 0;
+
         for (i, &area) in areas.iter().enumerate() {
             if i % 2 == 0 {
                 self.draw_day_column(frame, col_idx, area);
+
                 col_idx += 1;
             } else {
                 let sep_idx = i / 2;
                 let adjacent_to_focus = sep_idx == focused || sep_idx + 1 == focused;
+
                 let style = if adjacent_to_focus {
                     Style::default().fg(palette::FOCUS)
                 } else {
                     Style::default().fg(palette::BORDER)
                 };
+
                 let lines: Vec<Line<'_>> = (0..area.height).map(|_| Line::from("│")).collect();
                 let separator = Paragraph::new(lines).style(style);
+
                 frame.render_widget(separator, area);
             }
         }
@@ -94,10 +105,12 @@ impl App {
         frame.render_widget(outer, frame.area());
 
         let mut constraints = Vec::with_capacity(BACKLOG_COLUMNS * 2 - 1);
+
         for i in 0..BACKLOG_COLUMNS {
             if i > 0 {
                 constraints.push(Constraint::Length(1));
             }
+
             constraints.push(Constraint::Fill(1));
         }
 
@@ -108,20 +121,25 @@ impl App {
 
         let focused = self.backlog_cursor.column;
         let mut col_idx = 0;
+
         for (i, &area) in areas.iter().enumerate() {
             if i % 2 == 0 {
                 self.draw_backlog_column(frame, col_idx, area);
+
                 col_idx += 1;
             } else {
                 let sep_idx = i / 2;
                 let adjacent_to_focus = sep_idx == focused || sep_idx + 1 == focused;
+
                 let style = if adjacent_to_focus {
                     Style::default().fg(palette::FOCUS)
                 } else {
                     Style::default().fg(palette::BORDER)
                 };
+
                 let lines: Vec<Line<'_>> = (0..area.height).map(|_| Line::from("│")).collect();
                 let separator = Paragraph::new(lines).style(style);
+
                 frame.render_widget(separator, area);
             }
         }
@@ -130,6 +148,7 @@ impl App {
     fn draw_backlog_column(&self, frame: &mut Frame<'_>, col_idx: usize, area: Rect) {
         let focused = self.backlog_cursor.column == col_idx;
         let items = &self.board.backlog_columns[col_idx];
+
         let highlight_row = if focused {
             self.backlog_cursor.row_for(col_idx, &self.board)
         } else {
@@ -145,6 +164,7 @@ impl App {
         );
 
         let para = Paragraph::new(lines);
+
         frame.render_widget(para, area);
     }
 
@@ -177,11 +197,13 @@ impl App {
             .get(idx)
             .map(|d| d.as_slice())
             .unwrap_or(&[]);
+
         let highlight_row = if focused {
             self.cursor.row_for(idx, &self.board)
         } else {
             None
         };
+
         let lines = self.build_todo_lines_with_separators(
             items,
             area.width,
@@ -194,6 +216,7 @@ impl App {
             Paragraph::new(title_line).centered(),
             Rect { height: 1, ..area },
         );
+
         frame.render_widget(
             Paragraph::new(underline_line),
             Rect {
@@ -204,6 +227,7 @@ impl App {
         );
 
         let body = Paragraph::new(lines);
+
         frame.render_widget(body, content_area);
     }
 
@@ -222,18 +246,24 @@ impl App {
         let separator = "-".repeat(width as usize);
 
         let mut lines = Vec::with_capacity(items.len() * 2);
+
         for (i, item) in items.iter().enumerate() {
             if i > 0 {
                 let adjacent_to_focus = highlight_row == Some(i - 1) || highlight_row == Some(i);
+
                 let sep_style = if adjacent_to_focus {
                     Style::default().fg(palette::ACTIVE)
                 } else {
                     Style::default().fg(palette::BORDER)
                 };
+
                 lines.push(Line::from(separator.clone()).style(sep_style));
             }
+
             let is_selected = is_selected_fn(item.id);
+
             let mut line = item.to_line_with_prefix(is_selected);
+
             if is_selected {
                 line.style = line.style.patch(
                     Style::default()
@@ -243,13 +273,16 @@ impl App {
             } else if highlight_row == Some(i) {
                 line.style = line.style.patch(style_fn(i));
             }
+
             lines.push(line);
         }
+
         lines
     }
 
     pub fn draw_settings(&self, frame: &mut Frame<'_>, settings: &SettingsState) {
         let area = centered_rect(30, 18, frame.area());
+
         let block = Block::default()
             .title("Settings")
             .borders(Borders::ALL)
@@ -280,19 +313,24 @@ impl App {
             Line::from(""),
             Line::from("[Esc] close").style(Style::default().fg(palette::TEXT_DIM)),
         ];
+
         let paragraph = Paragraph::new(lines).block(block);
+
         frame.render_widget(Clear, area);
+
         frame.render_widget(paragraph, area);
     }
 
     pub fn draw_add_todo(&self, frame: &mut Frame<'_>, state: &AddTodoState) {
         let area = centered_rect(35, 15, frame.area());
+
         let block = Block::default()
             .title("Add Todo")
             .borders(Borders::ALL)
             .border_style(Style::default().fg(palette::FOCUS));
 
         let inner = block.inner(area);
+
         frame.render_widget(Clear, area);
         frame.render_widget(block, area);
 
@@ -301,17 +339,20 @@ impl App {
             Line::from(""),
             Line::from("[Enter] add  [Esc] cancel").style(Style::default().fg(palette::TEXT_DIM)),
         ];
+
         frame.render_widget(Paragraph::new(lines), inner);
     }
 
     pub fn draw_detail(&self, frame: &mut Frame<'_>, state: &DetailState) {
         let area = centered_rect(70, 50, frame.area());
+
         let block = Block::default()
             .title("Todo")
             .borders(Borders::ALL)
             .border_style(Style::default().fg(palette::FOCUS));
 
         let inner = block.inner(area);
+
         frame.render_widget(Clear, area);
         frame.render_widget(block, area);
 
@@ -329,6 +370,7 @@ impl App {
             let is_editing = is_focused && state.editing.is_some();
 
             let label = field.label();
+
             let value = if is_editing {
                 state.editing.as_ref().unwrap().clone()
             } else {
@@ -343,11 +385,14 @@ impl App {
 
             if field == DetailField::Notes {
                 lines.push(Line::from(""));
+
                 let prefix = if is_editing { "› " } else { "  " };
+
                 lines.push(Line::from(format!("{prefix}{label}:")).style(style));
 
                 if is_editing {
                     let note_lines: Vec<&str> = value.split('\n').collect();
+
                     for (i, line) in note_lines.iter().enumerate() {
                         let cursor = if i == note_lines.len() - 1 { "_" } else { "" };
                         lines.push(Line::from(format!("    {line}{cursor}")).style(style));
@@ -364,20 +409,24 @@ impl App {
             } else {
                 let prefix = if is_focused { "› " } else { "  " };
                 let suffix = if is_editing { "_" } else { "" };
+
                 lines.push(Line::from(format!("{prefix}{label}: {value}{suffix}")).style(style));
             }
         }
 
         lines.push(Line::from(""));
+
         lines.push(
             Line::from("[j/k] navigate  [Enter] edit/confirm  [x] toggle  [Esc] close")
                 .style(Style::default().fg(palette::TEXT_DIM)),
         );
+
         lines.push(
             Line::from("[Ctrl+j] newline in notes").style(Style::default().fg(palette::TEXT_DIM)),
         );
 
         let paragraph = Paragraph::new(lines);
+
         frame.render_widget(paragraph, inner);
     }
 
@@ -423,6 +472,7 @@ impl App {
         let height = lines.len() as u16 + 2;
         let width = 30;
         let area = frame.area();
+
         let popup_area = Rect {
             x: area.width.saturating_sub(width + 2),
             y: area.height.saturating_sub(height + 1),
@@ -436,6 +486,7 @@ impl App {
             .border_style(Style::default().fg(palette::FOCUS));
 
         let paragraph = Paragraph::new(lines).block(block);
+
         frame.render_widget(Clear, popup_area);
         frame.render_widget(paragraph, popup_area);
     }

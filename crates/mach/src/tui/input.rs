@@ -21,29 +21,35 @@ impl App {
             if matches!(self.ui_mode, UiMode::Board | UiMode::Backlog) {
                 self.show_help = !self.show_help;
             }
+
             return;
         }
 
         if self.show_help {
             self.show_help = false;
+
             return;
         }
 
         match &self.ui_mode {
             UiMode::Settings(_) => {
                 self.handle_settings_key(key);
+
                 return;
             }
             UiMode::Backlog => {
                 self.handle_backlog_key(key);
+
                 return;
             }
             UiMode::AddTodo(_) => {
                 self.handle_add_todo_key(key);
+
                 return;
             }
             UiMode::Detail(_) => {
                 self.handle_detail_key(key);
+
                 return;
             }
             UiMode::Board => {}
@@ -53,6 +59,7 @@ impl App {
             self.pending_g = false;
             if key.modifiers.is_empty() && matches!(key.code, KeyCode::Char('s')) {
                 self.open_settings();
+
                 return;
             }
         }
@@ -141,6 +148,7 @@ impl App {
             KeyCode::Char('d') if key.modifiers.is_empty() => {
                 if self.pending_delete {
                     self.delete_backlog_current().ok();
+
                     self.pending_delete = false;
                 } else {
                     self.pending_delete = true;
@@ -160,28 +168,36 @@ impl App {
         if let UiMode::Settings(settings) = &mut self.ui_mode {
             let mut apply: Option<WeekStart> = None;
             let mut close = false;
+
             match key.code {
                 KeyCode::Esc | KeyCode::Char('q') | KeyCode::Enter => close = true,
                 KeyCode::Char('m') => {
                     let target = WeekStart::Monday;
+
                     if settings.week_start != target {
                         settings.week_start = target;
+
                         apply = Some(target);
                     }
                 }
                 KeyCode::Char('s') => {
                     let target = WeekStart::Sunday;
+
                     if settings.week_start != target {
                         settings.week_start = target;
+
                         apply = Some(target);
                     }
                 }
                 _ => {}
             }
+
             let _ = settings;
+
             if close {
                 self.ui_mode = UiMode::Board;
             }
+
             if let Some(new_pref) = apply {
                 self.apply_week_start(new_pref);
             }
@@ -203,10 +219,12 @@ impl App {
             KeyCode::Enter => {
                 let input = std::mem::take(&mut state.input);
                 let target = state.target.clone();
+
                 if !input.trim().is_empty() {
                     self.submit_add_todo(input.trim().to_string(), target.clone())
                         .ok();
                 }
+
                 self.ui_mode = match target {
                     AddTarget::Day(_) => UiMode::Board,
                     AddTarget::BacklogColumn(_) => UiMode::Backlog,
@@ -229,36 +247,43 @@ impl App {
 
         if state.editing.is_some() {
             self.handle_detail_edit_key(key);
+
             return;
         }
 
         match key.code {
             KeyCode::Esc | KeyCode::Char('q') => {
                 let from_backlog = state.from_backlog;
+
                 self.ui_mode = if from_backlog {
                     UiMode::Backlog
                 } else {
                     UiMode::Board
                 };
+
                 self.refresh_board().ok();
+
                 self.refresh_backlog().ok();
             }
             KeyCode::Char('j') => {
                 let UiMode::Detail(ref mut state) = self.ui_mode else {
                     return;
                 };
+
                 state.field = state.field.next();
             }
             KeyCode::Char('k') => {
                 let UiMode::Detail(ref mut state) = self.ui_mode else {
                     return;
                 };
+
                 state.field = state.field.prev();
             }
             KeyCode::Enter => {
                 let UiMode::Detail(ref mut state) = self.ui_mode else {
                     return;
                 };
+
                 if state.field.is_editable() {
                     state.editing = Some(state.field_value(state.field));
                 }
@@ -322,12 +347,17 @@ impl App {
                 if !input.trim().is_empty()
                     && self
                         .runtime
-                        .block_on(self.services.todos.update_title(id, input.trim().to_string()))
+                        .block_on(
+                            self.services
+                                .todos
+                                .update_title(id, input.trim().to_string()),
+                        )
                         .is_ok()
                 {
                     let UiMode::Detail(ref mut state) = self.ui_mode else {
                         return;
                     };
+
                     state.title = input.trim().to_string();
                 }
             }
@@ -352,6 +382,7 @@ impl App {
                     let UiMode::Detail(ref mut state) = self.ui_mode else {
                         return;
                     };
+
                     state.date = date;
                 }
             }
@@ -361,6 +392,7 @@ impl App {
                 } else {
                     Some(input.clone())
                 };
+
                 if self
                     .runtime
                     .block_on(self.services.todos.update_notes(id, notes))
@@ -369,6 +401,7 @@ impl App {
                     let UiMode::Detail(ref mut state) = self.ui_mode else {
                         return;
                     };
+
                     state.notes = input;
                 }
             }
@@ -378,6 +411,7 @@ impl App {
 
     pub fn handle_horizontal(&mut self, dir: Horizontal) {
         let day_count = self.state.columns.len();
+
         if self.cursor.selection.is_some() {
             self.move_selected_horizontal(dir).ok();
         } else {
@@ -385,8 +419,11 @@ impl App {
                 Horizontal::Left => {
                     if self.cursor.focus == 0 {
                         self.state.prev_week();
+
                         self.cursor.focus = day_count - 1;
+
                         self.board.reset(day_count);
+
                         self.refresh_board().ok();
                     } else {
                         self.cursor.focus -= 1;
@@ -395,8 +432,11 @@ impl App {
                 Horizontal::Right => {
                     if self.cursor.focus + 1 >= day_count {
                         self.state.next_week();
+
                         self.cursor.focus = 0;
+
                         self.board.reset(day_count);
+
                         self.refresh_board().ok();
                     } else {
                         self.cursor.focus += 1;
@@ -413,6 +453,7 @@ impl App {
                 Vertical::Up => ReorderDirection::Up,
                 Vertical::Down => ReorderDirection::Down,
             };
+
             self.reorder_selected(reorder_dir).ok();
         } else {
             self.cursor.move_vertical(dir, &self.board);
@@ -449,6 +490,7 @@ impl App {
                 Vertical::Up => ReorderDirection::Up,
                 Vertical::Down => ReorderDirection::Down,
             };
+
             self.reorder_backlog_selected(reorder_dir).ok();
         } else {
             self.backlog_cursor.move_vertical(dir, &self.board);
@@ -458,6 +500,7 @@ impl App {
     pub fn toggle_backlog_selection(&mut self) {
         if self.backlog_cursor.selection.is_some() {
             self.backlog_cursor.selection = None;
+
             return;
         }
 
@@ -465,6 +508,7 @@ impl App {
             let row = self
                 .backlog_cursor
                 .row_for(self.backlog_cursor.column, &self.board);
+
             self.backlog_cursor.selection = Some(BacklogSelection {
                 id,
                 column: self.backlog_cursor.column,
@@ -479,9 +523,12 @@ impl App {
         } else {
             self.state.next_week();
         }
+
         self.board.reset(self.state.columns.len());
+
         self.cursor
             .sync_after_refresh(self.state.columns.len(), &self.board);
+
         self.refresh_board().ok();
     }
 
@@ -495,12 +542,14 @@ impl App {
                 if selection.column == 0 {
                     return Ok(());
                 }
+
                 selection.column - 1
             }
             Horizontal::Right => {
                 if selection.column + 1 >= BACKLOG_COLUMNS {
                     return Ok(());
                 }
+
                 selection.column + 1
             }
         };
@@ -518,6 +567,7 @@ impl App {
             row: None,
             ..selection
         });
+
         self.backlog_cursor.column = target_col;
 
         Ok(())

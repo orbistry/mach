@@ -18,6 +18,7 @@ pub struct WeekState {
 impl WeekState {
     pub fn new(today: NaiveDate, preference: WeekStart) -> Self {
         let week_start = start_of_week(today, preference);
+
         Self {
             week_start,
             columns: build_columns(week_start),
@@ -26,11 +27,13 @@ impl WeekState {
 
     pub fn prev_week(&mut self) {
         self.week_start -= ChronoDuration::days(7);
+
         self.columns = build_columns(self.week_start);
     }
 
     pub fn next_week(&mut self) {
         self.week_start += ChronoDuration::days(7);
+
         self.columns = build_columns(self.week_start);
     }
 
@@ -60,6 +63,7 @@ impl BoardData {
 
     pub fn reset(&mut self, num_days: usize) {
         self.days = vec![Vec::new(); num_days];
+
         for col in &mut self.backlog_columns {
             col.clear();
         }
@@ -69,6 +73,7 @@ impl BoardData {
         if idx >= self.days.len() {
             self.days.resize(idx + 1, Vec::new());
         }
+
         self.days[idx] = todos;
     }
 
@@ -104,6 +109,7 @@ impl BoardData {
                 return Some((idx, pos));
             }
         }
+
         None
     }
 
@@ -113,6 +119,7 @@ impl BoardData {
                 return Some((col, pos));
             }
         }
+
         None
     }
 
@@ -122,6 +129,7 @@ impl BoardData {
                 return Some(todo.status.as_str());
             }
         }
+
         None
     }
 
@@ -131,6 +139,7 @@ impl BoardData {
                 return Some(todo.status.as_str());
             }
         }
+
         None
     }
 }
@@ -149,7 +158,9 @@ impl TodoView {
         } else {
             self.title.clone()
         };
+
         let mut line = Line::from(text);
+
         if self.status == "done" {
             line.style = Style::default()
                 .fg(palette::TEXT_DIM)
@@ -157,6 +168,7 @@ impl TodoView {
         } else {
             line.style = Style::default().fg(palette::TEXT);
         }
+
         line
     }
 }
@@ -173,16 +185,20 @@ impl From<todo::Model> for TodoView {
 
 fn build_columns(week_start: NaiveDate) -> Vec<ColumnMeta> {
     let mut cols = Vec::with_capacity(7);
+
     for offset in 0..7 {
         let date = week_start + ChronoDuration::days(offset);
+
         let title = format!(
             "{} {:02}/{:02}",
             weekday_label(date.weekday()),
             date.month(),
             date.day()
         );
+
         cols.push(ColumnMeta { title, date });
     }
+
     cols
 }
 
@@ -200,9 +216,11 @@ fn weekday_label(day: chrono::Weekday) -> &'static str {
 
 pub fn start_of_week(date: NaiveDate, preference: WeekStart) -> NaiveDate {
     let weekday = date.weekday();
+
     let offset = match preference {
         WeekStart::Sunday => weekday.num_days_from_sunday() as i64,
         WeekStart::Monday => weekday.num_days_from_monday() as i64,
     };
+
     date - ChronoDuration::days(offset)
 }
