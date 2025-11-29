@@ -1,7 +1,6 @@
 [package]
 name = "machich"
 version.workspace = true
-authors.workspace = true
 edition.workspace = true
 description.workspace = true
 repository.workspace = true
