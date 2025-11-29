@@ -34,7 +34,10 @@ export default defineConfig({
         {
           label: "Reference",
           items: [
-            { label: "Keyboard Shortcuts", slug: "reference/keyboard-shortcuts" },
+            {
+              label: "Keyboard Shortcuts",
+              slug: "reference/keyboard-shortcuts",
+            },
             { label: "How It Works", slug: "reference/how-it-works" },
           ],
         },
