@@ -73,6 +73,7 @@ struct App {
     pending_g: bool,
     pending_delete: bool,
     should_quit: bool,
+    show_help: bool,
 }
 
 impl App {
@@ -97,6 +98,7 @@ impl App {
             pending_g: false,
             pending_delete: false,
             should_quit: false,
+            show_help: false,
         }
     }
 
@@ -143,6 +145,18 @@ impl App {
     }
 
     fn handle_key_event(&mut self, key: KeyEvent) {
+        if key.code == KeyCode::Char('?') {
+            if matches!(self.ui_mode, UiMode::Board | UiMode::Backlog) {
+                self.show_help = !self.show_help;
+            }
+            return;
+        }
+
+        if self.show_help {
+            self.show_help = false;
+            return;
+        }
+
         match &self.ui_mode {
             UiMode::Settings(_) => {
                 self.handle_settings_key(key);
@@ -247,6 +261,10 @@ impl App {
                 }
                 self.draw_detail(frame, state);
             }
+        }
+
+        if self.show_help {
+            self.draw_help(frame);
         }
     }
 
@@ -970,22 +988,38 @@ impl App {
     }
 
     fn draw_settings(&self, frame: &mut Frame<'_>, settings: &SettingsState) {
-        let area = centered_rect(50, 25, frame.area());
+        let area = centered_rect(30, 18, frame.area());
         let block = Block::default()
             .title("Settings")
             .borders(Borders::ALL)
             .border_style(Style::default().fg(palette::FOCUS));
 
-        let week_text = match settings.week_start {
-            WeekStart::Sunday => "Week Start: Sunday",
-            WeekStart::Monday => "Week Start: Monday",
+        let (monday_style, sunday_style) = match settings.week_start {
+            WeekStart::Monday => (
+                Style::default().fg(palette::ACTIVE),
+                Style::default().fg(palette::TEXT_DIM),
+            ),
+            WeekStart::Sunday => (
+                Style::default().fg(palette::TEXT_DIM),
+                Style::default().fg(palette::ACTIVE),
+            ),
         };
-        let instructions = vec![
-            Line::from(week_text),
-            Line::from("m: Monday, s: Sunday"),
-            Line::from("Esc/Enter: close"),
+
+        let lines = vec![
+            Line::from("Week Start"),
+            Line::from(""),
+            Line::from(vec![
+                "[m] ".into(),
+                ratatui::text::Span::styled("Monday", monday_style),
+            ]),
+            Line::from(vec![
+                "[s] ".into(),
+                ratatui::text::Span::styled("Sunday", sunday_style),
+            ]),
+            Line::from(""),
+            Line::from("[Esc] close").style(Style::default().fg(palette::TEXT_DIM)),
         ];
-        let paragraph = Paragraph::new(instructions).block(block);
+        let paragraph = Paragraph::new(lines).block(block);
         frame.render_widget(Clear, area);
         frame.render_widget(paragraph, area);
     }
@@ -1059,7 +1093,7 @@ impl App {
     }
 
     fn draw_add_todo(&self, frame: &mut Frame<'_>, state: &AddTodoState) {
-        let area = centered_rect(60, 15, frame.area());
+        let area = centered_rect(35, 15, frame.area());
         let block = Block::default()
             .title("Add Todo")
             .borders(Borders::ALL)
@@ -1069,9 +1103,12 @@ impl App {
         frame.render_widget(Clear, area);
         frame.render_widget(block, area);
 
-        let input_line =
-            Line::from(format!("› {}_", state.input)).style(Style::default().fg(palette::ACTIVE));
-        frame.render_widget(Paragraph::new(input_line), inner);
+        let lines = vec![
+            Line::from(format!("› {}_", state.input)).style(Style::default().fg(palette::ACTIVE)),
+            Line::from(""),
+            Line::from("[Enter] add  [Esc] cancel").style(Style::default().fg(palette::TEXT_DIM)),
+        ];
+        frame.render_widget(Paragraph::new(lines), inner);
     }
 
     fn open_detail_board(&mut self) {
@@ -1386,6 +1423,65 @@ impl App {
 
         self.refresh_board()?;
         Ok(())
+    }
+
+    fn draw_help(&self, frame: &mut Frame<'_>) {
+        let lines = match &self.ui_mode {
+            UiMode::Board => vec![
+                Line::from("Weekly View").style(Style::default().fg(palette::ACTIVE)),
+                Line::from(""),
+                Line::from("h/l      Move between days"),
+                Line::from("j/k      Move within column"),
+                Line::from("[/]      Previous/next week"),
+                Line::from("Enter    Select (drag mode)"),
+                Line::from("Space    Open todo details"),
+                Line::from("a        Add new todo"),
+                Line::from("x        Toggle completion"),
+                Line::from("dd       Delete todo"),
+                Line::from("s        Send to backlog"),
+                Line::from("t        Move to today"),
+                Line::from("T        Move to tomorrow"),
+                Line::from("b        Open backlog"),
+                Line::from("gs       Settings"),
+                Line::from("?        Toggle help"),
+                Line::from("q/Esc    Quit"),
+            ],
+            UiMode::Backlog => vec![
+                Line::from("Backlog View").style(Style::default().fg(palette::ACTIVE)),
+                Line::from(""),
+                Line::from("h/l      Move between columns"),
+                Line::from("j/k      Move within column"),
+                Line::from("Enter    Select (drag mode)"),
+                Line::from("Space    Open todo details"),
+                Line::from("a        Add new todo"),
+                Line::from("x        Toggle completion"),
+                Line::from("dd       Delete todo"),
+                Line::from("t        Move to today"),
+                Line::from("T        Move to tomorrow"),
+                Line::from("?        Toggle help"),
+                Line::from("b/q/Esc  Return to weekly"),
+            ],
+            _ => vec![],
+        };
+
+        let height = lines.len() as u16 + 2;
+        let width = 30;
+        let area = frame.area();
+        let popup_area = Rect {
+            x: area.width.saturating_sub(width + 2),
+            y: area.height.saturating_sub(height + 1),
+            width,
+            height,
+        };
+
+        let block = Block::default()
+            .title("Help (?)")
+            .borders(Borders::ALL)
+            .border_style(Style::default().fg(palette::FOCUS));
+
+        let paragraph = Paragraph::new(lines).block(block);
+        frame.render_widget(Clear, popup_area);
+        frame.render_widget(paragraph, popup_area);
     }
 }
 

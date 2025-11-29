@@ -68,6 +68,7 @@ mach list --done       # completed items
 | `T` | Move to tomorrow |
 | `b` | Open backlog view |
 | `gs` | Settings (week start day) |
+| `?` | Toggle help |
 | `q/Esc` | Quit |
 
 ### Backlog View
@@ -82,6 +83,7 @@ mach list --done       # completed items
 | `dd` | Delete |
 | `t` | Move to today |
 | `T` | Move to tomorrow |
+| `?` | Toggle help |
 | `b/q/Esc` | Return to weekly view |
 
 ### Todo Details

@@ -138,10 +138,13 @@ The backlog is a fullscreen view with 4 columns for organizing someday items.
 - Centered column titles with full-width underlines.
 - Works on both light and dark terminal themes.
 
+### Help Overlay
+
+- `?`: toggle help popup (bottom-right, context-aware).
+
 ### Future Hotkeys
 
 - `/`: search.
-- `?`: help overlay.
 
 ## Persistence & Sync
 
@@ -182,6 +185,7 @@ The backlog is a fullscreen view with 4 columns for organizing someday items.
 - [x] Implement terminal-adaptive visual design.
 - [x] Add todo details modal (`Space` key) for editing title, date, notes.
 - [x] Add `t`/`T` shortcuts in weekly view to move todos to today/tomorrow.
+- [x] Add help overlay (`?` key) with context-aware shortcuts.
 - [ ] Tests: unit tests for services (rollover, ordering) + integration tests
       for CLI.
 
