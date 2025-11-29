@@ -145,7 +145,7 @@ impl App {
                     .block_on(self.services.todos.mark_done(id, today))?;
             }
 
-            self.refresh_backlog()?;
+            self.refresh_board()?;
 
             if let Some((new_col, row)) = self.board.find_backlog_position(id) {
                 self.backlog_cursor.column = new_col;
