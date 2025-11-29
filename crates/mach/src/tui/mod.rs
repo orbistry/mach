@@ -31,12 +31,22 @@ use crate::{
 };
 
 mod palette {
+    #![allow(dead_code)]
     use ratatui::style::Color;
 
-    pub const COLUMN_FOCUS: Color = Color::Rgb(50, 150, 255);
-    pub const ROW_FOCUS: Color = Color::Rgb(255, 165, 0);
+    // Neutrals (terminal semantic - adapts to user's theme)
+    pub const TEXT_PRIMARY: Color = Color::Reset;
+    pub const TEXT_MUTED: Color = Color::Gray;
+    pub const SEPARATOR: Color = Color::DarkGray;
+    pub const UNFOCUSED: Color = Color::DarkGray;
+
+    // Focus & selection
+    pub const COLUMN_FOCUS: Color = Color::Blue;
+    pub const ROW_FOCUS: Color = Color::Yellow;
     pub const SELECTED: Color = Color::Magenta;
-    pub const UNFOCUSED: Color = Color::Rgb(100, 100, 100);
+
+    // Todo states
+    pub const COMPLETED: Color = Color::DarkGray;
 }
 
 /// Launch the Ratatui application, blocking on the UI event loop.
@@ -1260,7 +1270,11 @@ impl TodoView {
         };
         let mut line = Line::from(text);
         if self.status == "done" {
-            line.style = Style::default().add_modifier(Modifier::CROSSED_OUT);
+            line.style = Style::default()
+                .fg(palette::COMPLETED)
+                .add_modifier(Modifier::CROSSED_OUT | Modifier::DIM);
+        } else {
+            line.style = Style::default().fg(palette::TEXT_PRIMARY);
         }
         line
     }
@@ -1326,7 +1340,7 @@ impl CursorState {
             && selection.row == Some(row)
         {
             return Style::default()
-                .fg(Color::Magenta)
+                .fg(palette::SELECTED)
                 .add_modifier(Modifier::BOLD);
         }
 
@@ -1334,10 +1348,10 @@ impl CursorState {
             && let Some(current_row) = self.row_for(col, board)
             && current_row == row
         {
-            return Style::default().fg(Color::Yellow);
+            return Style::default().fg(palette::ROW_FOCUS);
         }
 
-        Style::default()
+        Style::default().fg(palette::TEXT_PRIMARY)
     }
 
     fn is_selected(&self, id: Uuid) -> bool {
@@ -1455,7 +1469,7 @@ impl BacklogCursor {
             && selection.row == Some(row)
         {
             return Style::default()
-                .fg(Color::Magenta)
+                .fg(palette::SELECTED)
                 .add_modifier(Modifier::BOLD);
         }
 
@@ -1463,10 +1477,10 @@ impl BacklogCursor {
             && let Some(current_row) = self.row_for(col, board)
             && current_row == row
         {
-            return Style::default().fg(Color::Yellow);
+            return Style::default().fg(palette::ROW_FOCUS);
         }
 
-        Style::default()
+        Style::default().fg(palette::TEXT_PRIMARY)
     }
 
     fn is_selected(&self, id: Uuid) -> bool {
