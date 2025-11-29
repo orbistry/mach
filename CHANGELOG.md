@@ -1,3 +1,7 @@
+# Version 0.2.3 (2025-11-29)
+
+- Add sponsor link to CLI help message (`mach --help`)
+
 # Version 0.2.2 (2025-11-28)
 
 - Readme updates
