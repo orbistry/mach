@@ -1,3 +1,8 @@
+# Version 0.2.4 (2025-12-04)
+
+- Fix double key press on Windows by filtering to only handle key press events
+- Fix auto-rollover to preserve relative sort order of rolled-over todos
+
 # Version 0.2.3 (2025-11-29)
 
 - Add sponsor link to CLI help message (`mach --help`)
