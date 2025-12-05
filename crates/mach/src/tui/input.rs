@@ -1,5 +1,5 @@
 use chrono::NaiveDate;
-use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
+use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 
 use crate::service::config::WeekStart;
 use crate::service::todo::ReorderDirection;
@@ -11,7 +11,9 @@ use super::state::BACKLOG_COLUMNS;
 
 impl App {
     pub fn handle_event(&mut self, evt: Event) {
-        if let Event::Key(key) = evt {
+        if let Event::Key(key) = evt
+            && key.kind == KeyEventKind::Press
+        {
             self.handle_key_event(key);
         }
     }
