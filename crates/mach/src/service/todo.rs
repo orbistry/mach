@@ -155,6 +155,7 @@ impl TodoService {
             .filter(todo::Column::ScheduledFor.lt(today))
             .filter(todo::Column::ScheduledFor.is_not_null())
             .filter(todo::Column::Status.ne(STATUS_DONE))
+            .order_by_asc(todo::Column::OrderIndex)
             .all(&self.db)
             .await
             .into_diagnostic()?;
